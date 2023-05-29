@@ -1,0 +1,3 @@
+(test
+ (name lexer_tests)
+ (libraries ounit2 interpreter))
