@@ -14,11 +14,6 @@ type token =
   | Function
   | Let
 
-let keywords = [
-  ("fn", Function);
-  ("let", Let);
-]
-
 let lookup_ident ident =
   match ident with
   | "fn" -> Function
