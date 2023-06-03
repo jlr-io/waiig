@@ -4,22 +4,21 @@ open Interpreter.Token
 
 let lexer_tests () =
   let test_next_token _ =
-    let input =
-      "let five = ;" 
-      (* "let five = 5;"
+    let input = 
+      "let five = 5;"
       ^ "let ten = 10;"
       ^ "let add = fn(x, y) {"
       ^ "x + y;"
       ^ "};"
-      ^ "let result = add(five, ten);" *)
+      ^ "let result = add(five, ten);"
     in
     let tests = [
       Let;
       Ident "five";
       Assign;
-      (* Int 5; *)
+      Int 5;
       Semicolon;
-      (*Let;
+      Let;
       Ident "ten";
       Assign;
       Int 10;
@@ -49,7 +48,7 @@ let lexer_tests () =
       Comma;
       Ident "ten";
       RParen;
-      Semicolon; *)
+      Semicolon;
       Eof;
     ] in
     let rec run_tests lexer tests =
