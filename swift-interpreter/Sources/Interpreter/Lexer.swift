@@ -1,14 +1,12 @@
 public struct Lexer {
 	let input: String
 	var position: Int
-	var readPosition: Int
 	var ch: Character?
 
 	public init(_ input: String) {
 		self.input = input
 		self.position = 0
-		self.readPosition = 1
-		self.ch = input.first
+		self.ch = !input.isEmpty ? input.first : nil  
 	}
 
 	public mutating func nextToken() -> Token {	
@@ -24,31 +22,37 @@ public struct Lexer {
 			case "}" : token = .rbrace
 			case "," : token = .comma
 			case ";" : token = .semicolon
-			case let .some(ch) where ch.isLetter : return readIdent() // <- early return
-			case let .some(ch) where ch.isNumber : return readDigit() // <- early return
+			case let .some(ch) where ch.isLetter : return readIdent()
+			case let .some(ch) where ch.isNumber : return readDigit()
 			default: token = .illegal
 		}
 		
-		self.readChar()
+		self.advance()
 		return token
 	}
 
-	mutating func readChar() {
-		if self.readPosition >= self.input.count{
-			self.ch = nil
-		} else {
-			let index = self.input.index(self.input.startIndex, offsetBy: self.readPosition)
-			self.ch = self.input[index]
+	mutating func advance() {
+		let nextCh = peekNext()
+		if nextCh != nil {
+			self.position += 1
 		}
-		self.position = self.readPosition
-		self.readPosition += 1
+		self.ch = nextCh
+	}
+
+	func peekNext() -> Character? {
+		let readPosition = self.position + 1
+  	if readPosition >= self.input.count {
+			return nil
+		}
+		let index = self.input.index(self.input.startIndex, offsetBy: readPosition)
+		return self.input[index];
 	}
 
 	mutating func readWhile(_ pred: (Character) -> Bool) -> String {
-		var str = ""
+		var str = String.init()
 		while let ch = self.ch, pred(ch) {
 			str += String(ch)
-			readChar()
+			self.advance()
 		}
 		return str
 	}
