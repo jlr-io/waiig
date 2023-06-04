@@ -14,14 +14,20 @@ public struct Lexer {
 		let token: Token
 		switch self.ch {
 			case nil : token = .eof
-			case "=" : token = .assign
+			case "=" : token = self.hasNext(ch: "=", isToken: .eq, elseIsToken: .assign)
 			case "+" : token = .plus
 			case "(" : token = .lparen
 			case ")" : token = .rparen
-			case "{" : token = .lbrace
-			case "}" : token = .rbrace
+			case "{" : token = .lcurly
+			case "}" : token = .rcurly
 			case "," : token = .comma
 			case ";" : token = .semicolon
+			case "-" : token = .minus
+			case "!" : token = self.hasNext(ch: "=", isToken: .notEq, elseIsToken: .bang)
+			case "*" : token = .asterisk
+			case "/" : token = .slash
+			case "<" : token = .lt
+			case ">" : token = .gt
 			case let .some(ch) where ch.isLetter : return readIdent()
 			case let .some(ch) where ch.isNumber : return readDigit()
 			default: token = .illegal
@@ -46,6 +52,15 @@ public struct Lexer {
 		}
 		let index = self.input.index(self.input.startIndex, offsetBy: readPosition)
 		return self.input[index];
+	}
+
+	mutating func hasNext(ch: Character, isToken: Token, elseIsToken: Token) -> Token {
+		if self.peekNext() == ch {
+			self.advance()
+			return isToken
+		} else {
+			return elseIsToken;
+		}
 	}
 
 	mutating func readWhile(_ pred: (Character) -> Bool) -> String {
