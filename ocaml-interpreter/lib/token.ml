@@ -1,21 +1,50 @@
 type token =
-  | Illegal
-  | Eof
-  | Ident of string
-  | Int of int
-  | Assign
-  | Plus
-  | Comma
-  | Semicolon
-  | LParen
-  | RParen
-  | LBrace
-  | RBrace
-  | Function
-  | Let
+(* Special *)
+| Illegal
+| Eof
+(* Identifiers *)
+| Ident of string
+| Int of int
+(* Keywords *)
+| Function
+| Let
+| True
+| False
+| If
+| Else
+| Return
+(* Symbols *)
+(* Operators *)
+| Assign
+| Plus
+| Minus
+| Bang
+| Asterisk
+| Slash
+(* Logical *)
+| LessThan
+| GreaterThan
+| Equal
+| NotEqual
+(* Delimiters *)
+| Comma
+| Semicolon
+| LeftParen
+| RightParen
+| LeftCurly
+| RightCurly
+
+let keywords = [
+  ("fn", Function);
+  ("let", Let);
+  ("true", True);
+  ("false", False);
+  ("if", If);
+  ("else", Else);
+  ("return", Return);
+]
 
 let lookup_ident ident =
-  match ident with
-  | "fn" -> Function
-  | "let" -> Let
-  | _ -> Ident ident
+  match List.assoc_opt ident keywords with
+  | Some keyword -> keyword
+  | None -> Ident ident

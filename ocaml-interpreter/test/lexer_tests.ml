@@ -11,48 +11,39 @@ let lexer_tests () =
       ^ "x + y;"
       ^ "};"
       ^ "let result = add(five, ten);"
+      ^ "!-/*5;"
+      ^ "5 < 10 > 5;"
+      ^ "if (5 < 10) {"
+      ^ "return true;"
+      ^ "} else {"
+      ^ "return false;"
+      ^ "}"
+      ^ "10 == 10;"
+      ^ "10 != 9;"
     in
+
     let tests = [
-      Let;
-      Ident "five";
-      Assign;
-      Int 5;
-      Semicolon;
-      Let;
-      Ident "ten";
-      Assign;
-      Int 10;
-      Semicolon;
-      Let;
-      Ident "add";
-      Assign;
-      Function;
-      LParen;
-      Ident "x";
-      Comma;
-      Ident "y";
-      RParen;
-      LBrace;
-      Ident "x";
-      Plus;
-      Ident "y";
-      Semicolon;
-      RBrace;
-      Semicolon;
-      Let;
-      Ident "result";
-      Assign;
-      Ident "add";
-      LParen;
-      Ident "five";
-      Comma;
-      Ident "ten";
-      RParen;
-      Semicolon;
+      Let; Ident "five"; Assign; Int 5; Semicolon;
+      Let; Ident "ten"; Assign; Int 10; Semicolon;
+      Let; Ident "add"; Assign; Function; LeftParen; Ident "x"; Comma; Ident "y"; RightParen; LeftCurly;
+      Ident "x"; Plus; Ident "y"; Semicolon;
+      RightCurly; Semicolon;
+      Let;Ident "result";
+      Assign; Ident "add"; LeftParen; Ident "five"; Comma; Ident "ten"; RightParen; Semicolon;
+      Bang; Minus; Slash; Asterisk; Int 5; Semicolon;
+      Int 5; LessThan; Int 10; GreaterThan; Int 5; Semicolon;
+      If; LeftParen; Int 5; LessThan; Int 10; RightParen; LeftCurly;
+      Return; True; Semicolon;
+      RightCurly; Else; LeftCurly;
+      Return; False; Semicolon;
+      RightCurly;
+      Int 10; Equal; Int 10; Semicolon;
+      Int 10; NotEqual; Int 9; Semicolon;
       Eof;
     ] in
+
     let rec run_tests lexer tests =
-      let lexer, token = next_token lexer in
+      let token, lexer = next_token lexer in
       match tests with
         | [] -> ()
         | tok :: tests -> 
