@@ -14,7 +14,7 @@ public struct Lexer {
 		let token: Token
 		switch self.ch {
 			case nil : token = .eof
-			case "=" : token = self.hasNext(ch: "=", isToken: .eq, elseIsToken: .assign)
+			case "=" : token = self.matchNext("=", .eq, .assign)
 			case "+" : token = .plus
 			case "(" : token = .lparen
 			case ")" : token = .rparen
@@ -23,7 +23,7 @@ public struct Lexer {
 			case "," : token = .comma
 			case ";" : token = .semicolon
 			case "-" : token = .minus
-			case "!" : token = self.hasNext(ch: "=", isToken: .notEq, elseIsToken: .bang)
+			case "!" : token = self.matchNext("=", .notEq, .bang)
 			case "*" : token = .asterisk
 			case "/" : token = .slash
 			case "<" : token = .lt
@@ -54,12 +54,12 @@ public struct Lexer {
 		return self.input[index];
 	}
 
-	mutating func hasNext(ch: Character, isToken: Token, elseIsToken: Token) -> Token {
+	mutating func matchNext(_ ch: Character, _ matched: Token, _ default: Token) -> Token {
 		if self.peekNext() == ch {
 			self.advance()
-			return isToken
+			return matched
 		} else {
-			return elseIsToken;
+			return `default`;
 		}
 	}
 
