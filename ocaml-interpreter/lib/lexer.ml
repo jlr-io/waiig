@@ -14,9 +14,9 @@ let rec next_token lexer =
   match lexer.ch with
     | None -> Eof, lexer
     | Some ch -> match ch with
-      | ch when is_letter ch -> read_ident_and_advance lexer
-      | ch when is_digit ch -> read_number_and_advance lexer
-      | _ -> read_symbol_and_advance lexer
+      | ch when is_ident ch -> read_ident lexer
+      | ch when is_number ch -> read_number lexer
+      | _ -> read_symbol lexer
 
 and advance lexer =
   let ch = peek_next lexer in
@@ -29,28 +29,28 @@ and peek_next lexer =
   then None
   else Some (String.get lexer.input (inc lexer.position))
 
-and if_followed_by lexer value ~is ~elseis=
+and match_next lexer value matched default =
   let token, lexer = match peek_next lexer with
-  | Some next when Char.(next = value) -> is, advance lexer
-  | _ -> elseis, lexer
+  | Some next when Char.(next = value) -> matched, advance lexer
+  | _ -> default, lexer
   in
   token, advance lexer
   
-and read_ident_and_advance lexer =
-  let lexer, ident = read_while lexer is_letter in
+and read_ident lexer =
+  let lexer, ident = advance_while lexer is_ident in
   Token.lookup_ident ident, lexer
 
-and read_number_and_advance lexer = 
-  let lexer, number = read_while lexer is_digit in
+and read_number lexer = 
+  let lexer, number = advance_while lexer is_number in
   Token.Int (Int.of_string number), lexer 
 
-and read_symbol_and_advance lexer = 
+and read_symbol lexer = 
   let open Token in
   match lexer.ch with
     | None -> Eof, lexer
     | Some ch -> 
       let token, lexer = match ch with 
-      | '=' -> if_followed_by lexer '=' ~is:Equal ~elseis:Assign
+      | '=' -> match_next lexer '=' Equal Assign
       | '+' -> Plus, advance lexer
       | '(' -> LeftParen, advance lexer
       | ')' -> RightParen, advance lexer
@@ -59,7 +59,7 @@ and read_symbol_and_advance lexer =
       | ',' -> Comma, advance lexer
       | ';' -> Semicolon, advance lexer
       | '-' -> Minus, advance lexer
-      | '!' -> if_followed_by lexer '=' ~is:NotEqual ~elseis:Bang
+      | '!' -> match_next lexer '=' NotEqual Bang
       | '*' -> Asterisk, advance lexer
       | '/' -> Slash, advance lexer
       | '<' -> LessThan, advance lexer
@@ -69,21 +69,21 @@ and read_symbol_and_advance lexer =
     token, lexer
   
 and skip_whitespace lexer =
-  let lexer, _ = read_while lexer is_whitespace in
+  let lexer, _ = advance_while lexer is_whitespace in
   lexer
 
-and read_while lexer pred =
-  let rec read_while_aux acc lexer =
+and advance_while lexer pred =
+  let rec advance_while_aux acc lexer =
     match lexer.ch with
     | None -> lexer, acc
     | Some ch -> if pred ch
-      then read_while_aux (acc ^ String.make 1 ch) (advance lexer)
+      then advance_while_aux (acc ^ String.make 1 ch) (advance lexer)
       else lexer, acc
   in
-  read_while_aux Caml.String.empty lexer
+  advance_while_aux Caml.String.empty lexer
 
-and is_letter ch = 
+and is_ident ch = 
   Char.(is_alpha ch || ch = '_')
-and is_digit = Char.is_digit
+and is_number = Char.is_digit
 and is_whitespace = Char.is_whitespace
 and inc = Int.succ
