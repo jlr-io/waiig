@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use crate::token::{lookup_ident, Token};
 
-struct Lexer {
+pub struct Lexer {
     input: String,
     position: usize,
     read_position: usize,
@@ -9,7 +9,7 @@ struct Lexer {
 }
 
 impl Lexer {
-    fn new(input: String) -> Self {
+    pub fn new(input: String) -> Self {
         let mut l = Lexer {
             input,
             position: 0,
@@ -38,7 +38,7 @@ impl Lexer {
         }
     }
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
         let token = match self.ch {
             None => Token::Eof,
