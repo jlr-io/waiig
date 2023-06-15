@@ -1,3 +1,5 @@
 (library
  (name interpreter)
- (libraries base))
+ (libraries base)
+ (preprocess
+  (pps ppx_deriving.show)))
