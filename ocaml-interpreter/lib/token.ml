@@ -33,6 +33,7 @@ type token =
 | RightParen
 | LeftCurly
 | RightCurly
+[@@deriving show]
 
 let keywords = [
   ("fn", Function);
