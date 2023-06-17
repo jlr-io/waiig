@@ -1,5 +1,5 @@
 import XCTest
-@testable import Interpreter
+@testable import Monkey
 
 final class LexerTests: XCTestCase {
     func testNextToken() {
