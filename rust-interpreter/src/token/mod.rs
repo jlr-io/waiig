@@ -1,10 +1,10 @@
 #[derive(Debug, PartialEq, Clone)]
-pub enum Token {
+pub enum Token<'a> {
     Illegal,
     Eof,
     // Identifiers + literals
-    Ident(String),
-    Int(String),
+    Ident(&'a str),
+    Int(&'a str),
     // Operators
     Assign,
     Plus,
@@ -42,6 +42,6 @@ pub fn lookup_ident(ident: &str) -> Token {
         "if" => Token::If,
         "else" => Token::Else,
         "return" => Token::Return,
-        _ => Token::Ident(ident.to_string()),
+        _ => Token::Ident(ident),
     }
 }

@@ -38,7 +38,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token<'a> {
         self.skip_whitespace();
         let token = match self.ch {
             None => Token::Eof,
@@ -77,7 +77,7 @@ impl<'a> Lexer<'a> {
                 }
                 ch if ch.is_numeric() => {
                     let literal = self.read_number();
-                    return Token::Int(literal);
+                    return Token::Int(&literal);
                 }
                 _ => Token::Illegal,
             },
@@ -86,7 +86,7 @@ impl<'a> Lexer<'a> {
         token
     }
 
-    fn read_identifier(&mut self) -> String {
+    fn read_identifier(&mut self) -> &'a str {
         let position = self.position;
         while let Some(ch) = self.ch {
             if !ch.is_alphabetic() {
@@ -94,10 +94,10 @@ impl<'a> Lexer<'a> {
             }
             self.read_char();
         }
-        self.input[position..self.position].to_string()
+        &self.input[position..self.position]
     }
 
-    fn read_number(&mut self) -> String {
+    fn read_number(&mut self) -> &'a str {
         let position = self.position;
         while let Some(ch) = self.ch {
             if !ch.is_numeric() {
@@ -105,7 +105,7 @@ impl<'a> Lexer<'a> {
             }
             self.read_char();
         }
-        self.input[position..self.position].to_string()
+        &self.input[position..self.position]
     }
 
     fn skip_whitespace(&mut self) {
@@ -119,7 +119,7 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Token;
+    type Item = Token<'a>;
     fn next(&mut self) -> Option<Self::Item> {
         let token = self.next_token();
         if token == Token::Eof {
