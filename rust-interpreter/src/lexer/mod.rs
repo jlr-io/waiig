@@ -1,23 +1,23 @@
 #![allow(dead_code)]
 use crate::token::{lookup_ident, Token};
 
-pub struct Lexer {
-    input: String,
+pub struct Lexer<'a> {
+    input: &'a str,
     position: usize,
     read_position: usize,
     ch: Option<char>,
 }
 
-impl Lexer {
-    pub fn new(input: String) -> Self {
-        let mut l = Lexer {
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a str) -> Self {
+        let mut lexer = Lexer {
             input,
             position: 0,
             read_position: 0,
             ch: None,
         };
-        l.read_char();
-        l
+        lexer.read_char();
+        lexer
     }
 
     fn read_char(&mut self) {
@@ -118,9 +118,8 @@ impl Lexer {
     }
 }
 
-impl Iterator for Lexer {
+impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
-
     fn next(&mut self) -> Option<Self::Item> {
         let token = self.next_token();
         if token == Token::Eof {
@@ -243,7 +242,7 @@ mod lexer_tests {
             let tok = lexer.next_token();
             assert_eq!(
                 &tok, tt,
-                "tests[{}] - tokentype wrong. expected={:#?}, got={:#?}",
+                "tests[{}] - token type wrong. expected={:#?}, got={:#?}",
                 i, tt, tok
             );
         }

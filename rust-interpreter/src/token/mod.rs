@@ -2,11 +2,9 @@
 pub enum Token {
     Illegal,
     Eof,
-
     // Identifiers + literals
     Ident(String),
     Int(String),
-
     // Operators
     Assign,
     Plus,
@@ -14,22 +12,17 @@ pub enum Token {
     Bang,
     Asterisk,
     Slash,
-
     Lt,
     Gt,
-
     Eq,
     NotEq,
-
     // Delimiters
     Comma,
     Semicolon,
-
     LParen,
     RParen,
     LCurly,
     RCurly,
-
     // Keywords
     Function,
     Let,
