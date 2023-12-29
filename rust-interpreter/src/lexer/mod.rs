@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use crate::token::{lookup_ident, Token};
 
+#[derive(Debug, Clone, Copy)]
 pub struct Lexer<'a> {
     input: &'a str,
     position: usize,
