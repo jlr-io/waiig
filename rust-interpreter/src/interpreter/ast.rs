@@ -1,9 +1,11 @@
 pub mod identifier;
-pub mod let_stmt;
+pub mod let_statement;
+pub mod return_statement;
 
 use crate::interpreter::{
     ast::{
-        let_stmt::LetStmt
+        let_statement::LetStatement,
+        return_statement::ReturnStatement
     },
     parser::{Parser, Parse},
     token::Token,
@@ -35,18 +37,17 @@ impl Node for Expression {
     }
 }
 
-#[derive(Debug)] 
-#[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) enum Statement<'a> {
-    Let(LetStmt<'a>),
-    None
+    Let(LetStatement<'a>),
+    Return(ReturnStatement<'a>)
 }
 
 impl Node for Statement<'_> {
     fn token_literal(&self) -> &str {
         match self {
             Statement::Let(let_statement) => let_statement.token_literal(),
-            Statement::None => ""
+            Statement::Return(return_statement) => return_statement.token_literal()
         }
     }
 }
@@ -58,7 +59,8 @@ impl StatementNode for Statement<'_> {
 impl<'a> Parse<'a> for Statement<'a> {
     fn parse(parser: &mut Parser<'a>) -> Option<Statement<'a>> {
         match parser.current_token {
-            Token::Let => Some(Statement::Let(LetStmt::parse(parser)?)),
+            Token::Let => Some(Statement::Let(LetStatement::parse(parser)?)),
+            Token::Return => Some(Statement::Return(ReturnStatement::parse(parser)?)),
             _ => None
         }
     }
@@ -78,7 +80,7 @@ impl<'a> Program<'a> {
 impl<'a> Parse<'a> for Program<'a> {
     fn parse(parser: &mut Parser<'a>) -> Option<Program<'a>> {
         let mut program = Program::new();
-        while !parser.current_token_is(Token::Eof) {
+        while !parser.current_is(Token::Eof) {
             if let Some(stmt) = Statement::parse(parser) {
                 program.statements.push(stmt);
             }

@@ -12,7 +12,7 @@ pub(crate) struct Parser<'a> {
     lexer: Lexer<'a>,
     pub current_token: Token<'a>,
     peek_token: Token<'a>,
-    pub errors: Vec<String>
+    errors: Vec<String>
 }
 
 impl<'a> Parser<'a> {
@@ -33,24 +33,42 @@ impl<'a> Parser<'a> {
         self.peek_token = self.lexer.next_token();
     }
 
-    pub fn current_token_is(&self, token: Token) -> bool {
+    pub fn current_is(&self, token: Token) -> bool {
         self.current_token == token
     }
 
-    pub fn peek_token_is(&self, token: Token) -> bool {
+    pub fn peek_is(&self, token: Token) -> bool {
         self.peek_token == token
     }
-
+    
     pub fn assert_peek_is(&mut self, token: Token) -> bool {
-        if self.peek_token_is(token) {
+        if self.peek_is(token) {
+            self.next_token();
             true
         } else {
-            self.errors.push(format!(
-                "expected next token to be {:?}, got {:?}",
-                token,
-                self.peek_token
-            ));
+            self.assert_error(token, self.peek_token);
             false
         }
+    }
+    
+    pub fn assert_error(&mut self, expected: Token, got: Token) {
+        self.push_error(format!("expected {:?}, got {:?}", 
+                                Token::lookup_token(expected), 
+                                Token::lookup_token(got)));
+    }
+    
+    pub fn push_error(&mut self, error: String) {
+        self.errors.push(error);
+    }
+    
+    pub fn check_errors(&self) {
+        if self.errors.len() == 0 {
+            return;
+        }
+        println!("parser has {} errors", self.errors.len());
+        for error in &self.errors {
+            println!("parser error: {}", error);
+        }
+        panic!("parser has {} errors", self.errors.len());
     }
 }

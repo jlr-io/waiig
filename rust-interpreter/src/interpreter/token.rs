@@ -3,7 +3,7 @@ pub enum Token<'a> {
     Illegal,
     Eof,
     // Identifiers + literals
-    Ident(&'a str),
+    Identifier(&'a str),
     Int(&'a str),
     // Operators
     Assign,
@@ -33,15 +33,49 @@ pub enum Token<'a> {
     Return,
 }
 
-pub fn lookup_ident(ident: &str) -> Token {
-    match ident {
-        "fn" => Token::Function,
-        "let" => Token::Let,
-        "true" => Token::True,
-        "false" => Token::False,
-        "if" => Token::If,
-        "else" => Token::Else,
-        "return" => Token::Return,
-        _ => Token::Ident(ident),
+impl Token<'_> {
+    pub fn lookup_identifier(ident: &str) -> Token {
+        match ident {
+            "fn" => Token::Function,
+            "let" => Token::Let,
+            "true" => Token::True,
+            "false" => Token::False,
+            "if" => Token::If,
+            "else" => Token::Else,
+            "return" => Token::Return,
+            _ => Token::Identifier(ident),
+        }
+    }
+    
+    pub fn lookup_token(token: Token) -> &str {
+        match token {
+            Token::Illegal => "illegal",
+            Token::Eof => "eof",
+            Token::Identifier(_) => "identifier",
+            Token::Int(_) => "int",
+            Token::Assign => "=",
+            Token::Plus => "+",
+            Token::Minus => "-",
+            Token::Bang => "!",
+            Token::Asterisk => "*",
+            Token::Slash => "/",
+            Token::Lt => "<",
+            Token::Gt => ">",
+            Token::Eq => "==",
+            Token::NotEq => "!=",
+            Token::Comma => ",",
+            Token::Semicolon => ";",
+            Token::LParen => "(",
+            Token::RParen => ")",
+            Token::LCurly => "{",
+            Token::RCurly => "}",
+            Token::Function => "fn",
+            Token::Let => "let",
+            Token::True => "true",
+            Token::False => "false",
+            Token::If => "if",
+            Token::Else => "else",
+            Token::Return => "return",
+        }
     }
 }

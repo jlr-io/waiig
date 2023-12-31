@@ -28,9 +28,9 @@ impl<'a> ExpressionNode for Identifier<'a> {
 impl<'a> Parse<'a> for Identifier<'a> {
     fn parse(parser: &mut Parser<'a>) -> Option<Identifier<'a>> {
         match parser.current_token {
-            Token::Ident(ident) => Some(Identifier::new(ident)),
+            Token::Identifier(ident) => Some(Identifier::new(ident)),
             _ => {
-                parser.errors.push(format!("expected identifier, got {:?}", parser.current_token));
+                parser.assert_error(Token::Identifier(""), parser.current_token);
                 None
             }
         }

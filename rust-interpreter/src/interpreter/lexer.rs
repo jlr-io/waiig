@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::interpreter::token::{Token, lookup_ident};
+use crate::interpreter::token::Token;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Lexer<'a> {
@@ -74,7 +74,7 @@ impl<'a> Lexer<'a> {
                 '}' => Token::RCurly,
                 ch if ch.is_alphabetic() => {
                     let literal = self.read_identifier();
-                    return lookup_ident(&literal);
+                    return Token::lookup_identifier(&literal);
                 }
                 ch if ch.is_numeric() => {
                     let literal = self.read_number();
@@ -164,39 +164,39 @@ mod lexer_tests {
         let mut lexer = Lexer::new(input.into());
         let tests = [
             Token::Let,
-            Token::Ident("five".into()),
+            Token::Identifier("five".into()),
             Token::Assign,
             Token::Int("5".into()),
             Token::Semicolon,
             Token::Let,
-            Token::Ident("ten".into()),
+            Token::Identifier("ten".into()),
             Token::Assign,
             Token::Int("10".into()),
             Token::Semicolon,
             Token::Let,
-            Token::Ident("add".into()),
+            Token::Identifier("add".into()),
             Token::Assign,
             Token::Function,
             Token::LParen,
-            Token::Ident("x".into()),
+            Token::Identifier("x".into()),
             Token::Comma,
-            Token::Ident("y".into()),
+            Token::Identifier("y".into()),
             Token::RParen,
             Token::LCurly,
-            Token::Ident("x".into()),
+            Token::Identifier("x".into()),
             Token::Plus,
-            Token::Ident("y".into()),
+            Token::Identifier("y".into()),
             Token::Semicolon,
             Token::RCurly,
             Token::Semicolon,
             Token::Let,
-            Token::Ident("result".into()),
+            Token::Identifier("result".into()),
             Token::Assign,
-            Token::Ident("add".into()),
+            Token::Identifier("add".into()),
             Token::LParen,
-            Token::Ident("five".into()),
+            Token::Identifier("five".into()),
             Token::Comma,
-            Token::Ident("ten".into()),
+            Token::Identifier("ten".into()),
             Token::RParen,
             Token::Semicolon,
             Token::Bang,

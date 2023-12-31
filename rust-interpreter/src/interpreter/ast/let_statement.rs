@@ -5,39 +5,35 @@ use crate::interpreter::{
 };
 
 #[derive(Debug)]
-pub(crate) struct LetStmt<'a> {
+pub(crate) struct LetStatement<'a> {
     pub token: Token<'a>,
     pub name: Identifier<'a>,
     pub value: Expression,
 }
 
-impl<'a> LetStmt<'a> {
-    pub fn new(token: Token<'a>, name: Identifier<'a>, value: Expression) -> LetStmt<'a> {
-        LetStmt { token, name, value }
+impl<'a> LetStatement<'a> {
+    pub fn new(token: Token<'a>, name: Identifier<'a>, value: Expression) -> LetStatement<'a> {
+        LetStatement { token, name, value }
     }
 }
 
-impl<'a> Node for LetStmt<'a> {
+impl<'a> Node for LetStatement<'a> {
     fn token_literal(&self) -> &str {
-        match self.token {
-            Token::Ident(ident) => ident,
-            _ => "" // illegal?
-        }
+        Token::lookup_token(self.token)
     }
 }
 
-impl<'a> Parse<'a> for LetStmt<'a> {
-    fn parse(parser: &mut Parser<'a>) -> Option<LetStmt<'a>> {
+impl<'a> Parse<'a> for LetStatement<'a> {
+    fn parse(parser: &mut Parser<'a>) -> Option<LetStatement<'a>> {
         let token = parser.current_token;
         parser.next_token();
         let identifier = Identifier::parse(parser)?;
         if !parser.assert_peek_is(Token::Assign) { return None; }
-        parser.next_token();
         // todo skipping the expressions until we encounter a semi colon
-        while !parser.current_token_is(Token::Semicolon) {
+        while !parser.current_is(Token::Semicolon) {
             parser.next_token();
         }
-        Some(LetStmt::new(token, identifier, Expression::None))
+        Some(LetStatement::new(token, identifier, Expression::None))
     }
 }
 
@@ -48,7 +44,8 @@ mod let_statement_tests {
         ast::{Node, Statement},
         lexer::Lexer
     };
-    
+    use crate::interpreter::ast::Program;
+
     #[test]
     fn test_let_statements() {
         let input = r#"
@@ -59,10 +56,11 @@ mod let_statement_tests {
 
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
-        let program = match parser.parse_program() {
+        let program = match Program::parse(&mut parser) {
             Some(program) => program,
             None => panic!("parse_program() returned None"),
         };
+        parser.check_errors();
         if program.statements.len() != 3 {
             panic!("program.statements does not contain 3 statements. got={}", program.statements.len());
         }
