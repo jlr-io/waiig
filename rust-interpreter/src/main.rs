@@ -1,3 +1,4 @@
+mod interpreter;
 use interpreter::repl;
 use std::io;
 

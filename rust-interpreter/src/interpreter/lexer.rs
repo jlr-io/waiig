@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::token::{lookup_ident, Token};
+use crate::interpreter::token::{Token, lookup_ident};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Lexer<'a> {
