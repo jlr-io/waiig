@@ -1,5 +1,5 @@
-use crate::interpreter::lexer::Lexer;
 use std::{io::{Write, BufRead}};
+use super::lexer::Lexer;
 
 pub fn start<R: BufRead, W: Write>(mut input: R, mut output: W) {
     loop {

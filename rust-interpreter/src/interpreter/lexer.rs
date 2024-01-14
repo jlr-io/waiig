@@ -1,5 +1,4 @@
-#![allow(dead_code)]
-use crate::interpreter::token::Token;
+use super::token::Token;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Lexer<'a> {
@@ -47,7 +46,7 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     if self.peek_char() == Some('=') {
                         self.read_char();
-                        Token::Eq
+                        Token::Equal
                     } else {
                         Token::Assign
                     }
@@ -57,15 +56,15 @@ impl<'a> Lexer<'a> {
                 '!' => {
                     if self.peek_char() == Some('=') {
                         self.read_char();
-                        Token::NotEq
+                        Token::NotEqual
                     } else {
                         Token::Bang
                     }
                 }
                 '*' => Token::Asterisk,
                 '/' => Token::Slash,
-                '<' => Token::Lt,
-                '>' => Token::Gt,
+                '<' => Token::LessThan,
+                '>' => Token::GreaterThan,
                 ',' => Token::Comma,
                 ';' => Token::Semicolon,
                 '(' => Token::LParen,
@@ -74,7 +73,7 @@ impl<'a> Lexer<'a> {
                 '}' => Token::RCurly,
                 ch if ch.is_alphabetic() => {
                     let literal = self.read_identifier();
-                    return Token::lookup_identifier(&literal);
+                    return Token::lookup_token(&literal);
                 }
                 ch if ch.is_numeric() => {
                     let literal = self.read_number();
@@ -206,15 +205,15 @@ mod lexer_tests {
             Token::Int("5".into()),
             Token::Semicolon,
             Token::Int("5".into()),
-            Token::Lt,
+            Token::LessThan,
             Token::Int("10".into()),
-            Token::Gt,
+            Token::GreaterThan,
             Token::Int("5".into()),
             Token::Semicolon,
             Token::If,
             Token::LParen,
             Token::Int("5".into()),
-            Token::Lt,
+            Token::LessThan,
             Token::Int("10".into()),
             Token::RParen,
             Token::LCurly,
@@ -229,11 +228,11 @@ mod lexer_tests {
             Token::Semicolon,
             Token::RCurly,
             Token::Int("10".into()),
-            Token::Eq,
+            Token::Equal,
             Token::Int("10".into()),
             Token::Semicolon,
             Token::Int("10".into()),
-            Token::NotEq,
+            Token::NotEqual,
             Token::Int("9".into()),
             Token::Semicolon,
             Token::Eof,

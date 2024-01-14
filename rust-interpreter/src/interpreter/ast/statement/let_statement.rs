@@ -1,39 +1,44 @@
-use crate::interpreter::{
-    token::Token,
-    ast::{identifier::Identifier, Expression, Node},
-    parser::{Parser, Parse}
+use std::fmt::{Display, Formatter, Result};
+use super::*;
+use self::{
+    identifier::Identifier,
+    expression::Expression,
 };
 
 #[derive(Debug)]
 pub(crate) struct LetStatement<'a> {
     pub token: Token<'a>,
     pub name: Identifier<'a>,
-    pub value: Expression,
+    pub value: Expression<'a>,
 }
 
 impl<'a> LetStatement<'a> {
-    pub fn new(token: Token<'a>, name: Identifier<'a>, value: Expression) -> LetStatement<'a> {
+    pub fn new(token: Token<'a>, name: Identifier<'a>, value: Expression<'a>) -> LetStatement<'a> {
         LetStatement { token, name, value }
     }
-}
 
-impl<'a> Node for LetStatement<'a> {
-    fn token_literal(&self) -> &str {
-        Token::lookup_token(self.token)
-    }
-}
-
-impl<'a> Parse<'a> for LetStatement<'a> {
-    fn parse(parser: &mut Parser<'a>) -> Option<LetStatement<'a>> {
+    pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<LetStatement<'a>> {
         let token = parser.current_token;
         parser.next_token();
         let identifier = Identifier::parse(parser)?;
-        if !parser.assert_peek_is(Token::Assign) { return None; }
+        parser.assert_peek_is(Token::Assign)?;
         // todo skipping the expressions until we encounter a semi colon
         while !parser.current_is(Token::Semicolon) {
             parser.next_token();
         }
-        Some(LetStatement::new(token, identifier, Expression::None))
+        Ok(LetStatement::new(token, identifier, Expression::Identifier(Identifier::new(""))))
+    }
+}
+
+impl Display for LetStatement<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{} {} = {};", self.token_literal(), self.name.value, self.value)
+    }
+}
+
+impl Node for LetStatement<'_> {
+    fn token_literal(&self) -> String {
+        Token::lookup_literal(&self.token)
     }
 }
 
@@ -56,10 +61,7 @@ mod let_statement_tests {
 
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
-        let program = match Program::parse(&mut parser) {
-            Some(program) => program,
-            None => panic!("parse_program() returned None"),
-        };
+        let program = Program::parse(&mut parser).unwrap();
         parser.check_errors();
         if program.statements.len() != 3 {
             panic!("program.statements does not contain 3 statements. got={}", program.statements.len());
@@ -84,7 +86,7 @@ mod let_statement_tests {
                 panic!("let_stmt.name.token_literal() not '{}'. got={}", name, let_stmt.name.token_literal());
             }
         } else {
-            panic!("stmt not Statement::Let. got={:?}", stmt);
+            panic!("stmt not Statement::Let. got={}", stmt);
         }
         true
     }

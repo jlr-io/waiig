@@ -1,17 +1,55 @@
-use crate::interpreter::{
+use crate::interpreter::ast::expression::Expression;
+use super::{
     token::Token,
-    lexer::Lexer,
+    lexer::Lexer
 };
 
-pub trait Parse<'a> where Self: Sized {
-    fn parse(parser: &mut Parser<'a>) -> Option<Self>;
+#[derive(Debug, PartialEq, PartialOrd)]
+pub(crate) enum Precedence {
+    Lowest = 1,
+    Equals = 2,
+    LessGreater = 3,
+    Sum = 4,
+    Product = 5,
+    Prefix = 6,
+    Call = 7
 }
+
+impl From<Token<'_>> for Precedence {
+    fn from(token: Token) -> Self {
+        match token {
+            Token::Equal => Precedence::Equals,
+            Token::NotEqual => Precedence::Equals,
+            Token::LessThan => Precedence::LessGreater,
+            Token::GreaterThan => Precedence::LessGreater,
+            Token::Plus => Precedence::Sum,
+            Token::Minus => Precedence::Sum,
+            Token::Slash => Precedence::Product,
+            Token::Asterisk => Precedence::Product,
+            Token::LParen => Precedence::Call,
+            _ => Precedence::Lowest,
+        }
+    }
+}
+
+// // todo remove precedence
+// pub(crate) trait Parse<'a> where Self:Sized {
+//     fn parse(parser: &mut Parser<'a>, precedence: Option<Precedence>) -> anyhow::Result<Self>;
+// }
+// 
+// pub(crate) trait ParsePrefix<'a> where Self:Sized {
+//     fn parse_prefix(parser: &mut Parser<'a>, precedence: Option<Precedence>) -> anyhow::Result<Self>;
+// }
+// 
+// pub(crate) trait ParseInfix<'a> where Self:Sized {
+//     fn parse_infix(parser: &mut Parser<'a>, left: Expression<'a>) -> anyhow::Result<Self>;
+// }
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
     lexer: Lexer<'a>,
     pub current_token: Token<'a>,
-    peek_token: Token<'a>,
+    pub(crate) peek_token: Token<'a>,
     errors: Vec<String>
 }
 
@@ -41,20 +79,33 @@ impl<'a> Parser<'a> {
         self.peek_token == token
     }
     
-    pub fn assert_peek_is(&mut self, token: Token) -> bool {
+    pub fn assert_peek_is(&mut self, token: Token) -> anyhow::Result<bool> {
         if self.peek_is(token) {
             self.next_token();
-            true
+            Ok(true)
         } else {
-            self.assert_error(token, self.peek_token);
-            false
+            Err(self.unexpected_token_error(token, self.peek_token))
         }
     }
     
-    pub fn assert_error(&mut self, expected: Token, got: Token) {
-        self.push_error(format!("expected {:?}, got {:?}", 
-                                Token::lookup_token(expected), 
-                                Token::lookup_token(got)));
+    pub fn unexpected_token_error(&mut self, expected: Token, got: Token) -> anyhow::Error {
+        let err = format!("expected {:?}, got {:?}",
+                          Token::lookup_literal(&expected),
+                          Token::lookup_literal(&got));
+        self.push_error(err);
+        anyhow::Error::msg("assert_error")
+    }
+    
+    pub fn unexpected_prefix_error(&mut self, token: Token) -> anyhow::Error {
+        let err = format!("no prefix parse function for {:?}", Token::lookup_literal(&token));
+        self.push_error(err);
+        anyhow::Error::msg("assert_error")
+    }
+    
+    pub fn unexpected_infix_error(&mut self, token: Token) -> anyhow::Error {
+        let err = format!("no infix parse function for {:?}", Token::lookup_literal(&token));
+        self.push_error(err);
+        anyhow::Error::msg("assert_error")
     }
     
     pub fn push_error(&mut self, error: String) {

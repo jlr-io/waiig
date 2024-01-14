@@ -1,8 +1,5 @@
-use crate::interpreter::{
-    token::Token,
-    ast::{ExpressionNode, Node},
-    parser::{Parser, Parse}
-};
+use std::fmt::{Result};
+use super::*;
 
 #[derive(Debug)]
 pub(crate) struct Identifier<'a> {
@@ -10,32 +7,30 @@ pub(crate) struct Identifier<'a> {
 }
 
 impl<'a> Identifier<'a> {
-    pub fn new(value: &'a str) -> Identifier<'a> {
+    pub fn new(value: &str) -> Identifier {
         Identifier { value }
     }
-}
 
-impl<'a> Node for Identifier<'a> {
-    fn token_literal(&self) -> &str {
-        self.value
-    }
-}
-
-impl<'a> ExpressionNode for Identifier<'a> {
-    fn expression_node(&self) {}
-}
-
-impl<'a> Parse<'a> for Identifier<'a> {
-    fn parse(parser: &mut Parser<'a>) -> Option<Identifier<'a>> {
+    pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<Identifier<'a>> {
         match parser.current_token {
-            Token::Identifier(ident) => Some(Identifier::new(ident)),
-            _ => {
-                parser.assert_error(Token::Identifier(""), parser.current_token);
-                None
-            }
+            Token::Identifier(ident) => Ok(Identifier::new(ident)),
+            _ => Err(parser.unexpected_token_error(Token::Identifier(""), parser.current_token))
         }
     }
 }
+
+impl Display for Identifier<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+impl Node for Identifier<'_> {
+    fn token_literal(&self) -> String {
+        self.value.to_string()
+    }
+}
+
 
 #[cfg(test)]
 mod identifier_tests {
@@ -50,6 +45,8 @@ mod identifier_tests {
         let input = Lexer::new("foobar");
         let mut parser = Parser::new(input);
         let identifier = Identifier::parse(&mut parser).unwrap();
+        parser.check_errors();
         assert_eq!(identifier.value, "foobar");
+        assert_eq!(identifier.token_literal(), "foobar");
     }
 }

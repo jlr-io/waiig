@@ -1,53 +1,48 @@
-use crate::interpreter::{
-    token::Token,
-    ast::{identifier::Identifier, Expression, Node},
-    parser::{Parser, Parse}
+use super::*;
+use self::{
+    expression::Expression,
+    identifier::Identifier
 };
-use crate::interpreter::ast::StatementNode;
 
 #[derive(Debug)]
 pub(crate) struct ReturnStatement<'a> {
     pub token: Token<'a>,
-    pub return_value: Expression
+    pub return_value: Expression<'a>
 }
 
-impl ReturnStatement<'_> {
-    pub fn new(token: Token, return_value: Expression) -> ReturnStatement {
+impl<'a> ReturnStatement<'a> {
+    pub fn new(token: Token<'a>, return_value: Expression<'a>) -> ReturnStatement<'a> {
         ReturnStatement { token, return_value }
     }
-}
 
-impl Node for ReturnStatement<'_> {
-    fn token_literal(&self) -> &str {
-        Token::lookup_token(self.token)
-    }
-}
-
-impl StatementNode for ReturnStatement<'_> {
-    fn statement_node(&self) {}
-}
-
-impl<'a> Parse<'a> for ReturnStatement<'a> {
-    fn parse(parser: &mut Parser<'a>) -> Option<ReturnStatement<'a>> {
+    pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<ReturnStatement<'a>> {
         let token = parser.current_token;
         parser.next_token();
         // todo skipping the expressions until we encounter a semi colon
         while !parser.current_is(Token::Semicolon) {
             parser.next_token();
         }
-        Some(ReturnStatement::new(token, Expression::None))
+        Ok(ReturnStatement::new(token, Expression::Identifier(Identifier::new(""))))
+    }
+}
+
+impl Display for ReturnStatement<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {};", self.token_literal(), self.return_value)
+    }
+}
+
+impl Node for ReturnStatement<'_> {
+    fn token_literal(&self) -> String {
+        Token::lookup_literal(&self.token)
     }
 }
 
 #[cfg(test)]
 mod return_statement_tests {
+    use crate::interpreter::lexer::Lexer;
     use super::*;
-    use crate::interpreter::{
-        ast::{Node, Statement},
-        lexer::Lexer
-    };
-    use crate::interpreter::ast::Program;
-
+    
     #[test]
     fn test_return_statements() {
         let input = r#"
@@ -58,10 +53,7 @@ mod return_statement_tests {
 
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
-        let program = match Program::parse(&mut parser) {
-            Some(program) => program,
-            None => panic!("failed to parse program")
-        };
+        let program = Program::parse(&mut parser).unwrap();
         parser.check_errors();
 
         assert_eq!(program.statements.len(), 3);
@@ -73,7 +65,7 @@ mod return_statement_tests {
             match stmt {
                 Statement::Return(return_statement) => {
                     assert_eq!(return_statement.token_literal(), "return");
-                    // assert_eq!(return_statement.return_value.token_literal(), test.to_string());
+                    assert_eq!(return_statement.return_value.token_literal(), test.to_string());
                 },
                 _ => panic!("expected return statement")
             }
