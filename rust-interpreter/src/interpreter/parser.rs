@@ -1,4 +1,3 @@
-use crate::interpreter::ast::expression::Expression;
 use super::{
     token::Token,
     lexer::Lexer
@@ -31,19 +30,6 @@ impl From<Token<'_>> for Precedence {
         }
     }
 }
-
-// // todo remove precedence
-// pub(crate) trait Parse<'a> where Self:Sized {
-//     fn parse(parser: &mut Parser<'a>, precedence: Option<Precedence>) -> anyhow::Result<Self>;
-// }
-// 
-// pub(crate) trait ParsePrefix<'a> where Self:Sized {
-//     fn parse_prefix(parser: &mut Parser<'a>, precedence: Option<Precedence>) -> anyhow::Result<Self>;
-// }
-// 
-// pub(crate) trait ParseInfix<'a> where Self:Sized {
-//     fn parse_infix(parser: &mut Parser<'a>, left: Expression<'a>) -> anyhow::Result<Self>;
-// }
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
@@ -90,23 +76,23 @@ impl<'a> Parser<'a> {
     
     pub fn unexpected_token_error(&mut self, expected: Token, got: Token) -> anyhow::Error {
         let err = format!("expected {:?}, got {:?}",
-                          Token::lookup_literal(&expected),
-                          Token::lookup_literal(&got));
+                          expected.to_string(),// Token::lookup_literal(&expected),
+                          got.to_string());//Token::lookup_literal(&got));
         self.push_error(err);
         anyhow::Error::msg("assert_error")
     }
     
     pub fn unexpected_prefix_error(&mut self, token: Token) -> anyhow::Error {
-        let err = format!("no prefix parse function for {:?}", Token::lookup_literal(&token));
+        let err = format!("no prefix parse function for {:?}", token.to_string());
         self.push_error(err);
         anyhow::Error::msg("assert_error")
     }
     
-    pub fn unexpected_infix_error(&mut self, token: Token) -> anyhow::Error {
-        let err = format!("no infix parse function for {:?}", Token::lookup_literal(&token));
-        self.push_error(err);
-        anyhow::Error::msg("assert_error")
-    }
+    // pub fn unexpected_infix_error(&mut self, token: Token) -> anyhow::Error {
+    //     let err = format!("no infix parse function for {:?}", token.to_string());
+    //     self.push_error(err);
+    //     anyhow::Error::msg("assert_error")
+    // }
     
     pub fn push_error(&mut self, error: String) {
         self.errors.push(error);

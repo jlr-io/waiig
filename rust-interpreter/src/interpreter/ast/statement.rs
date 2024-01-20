@@ -38,27 +38,6 @@ impl Display for Statement<'_> {
     }
 }
 
-impl Node for Statement<'_> {
-    fn token_literal(&self) -> String {
-        match self {
-            Statement::Let(ls) => ls.token_literal(),
-            Statement::Return(rs) => rs.token_literal(),
-            Statement::Expression(es) => es.token_literal(),
-        }
-    }
-}
-// 
-// impl<'a> Parse<'a> for Statement<'a> {
-//     fn parse(parser: &mut Parser<'a>, _: Option<Precedence>) -> anyhow::Result<Statement<'a>> {
-//         let stmt = match parser.current_token {
-//             Token::Let => Statement::Let(LetStatement::parse(parser)?),
-//             Token::Return => Statement::Return(ReturnStatement::parse(parser)?),
-//             _ => Statement::Expression(ExpressionStatement::parse(parser)?)
-//         };
-//         Ok(stmt)
-//     }
-// }
-
 #[cfg(test)]
 mod statement_tests {
     use super::*;
@@ -69,12 +48,12 @@ mod statement_tests {
             statements: vec![
                 Statement::Let(LetStatement::new(
                     Token::Let,
-                    Identifier::new("myVar"),
-                    Expression::Identifier(Identifier::new("someVar"))
+                    Identifier::new(Token::Let, "myVar"),
+                    Expression::Identifier(Identifier::new(Token::Identifier("someVar"), "someVar"))
                 )),
                 Statement::Return(ReturnStatement::new(
                     Token::Return,
-                    Expression::Identifier(Identifier::new("someReturn"))
+                    Expression::Identifier(Identifier::new(Token::Return, "someReturn"))
                 )),
             ]
         };

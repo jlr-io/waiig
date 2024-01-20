@@ -14,9 +14,31 @@ use self::{
 #[derive(Debug)]
 pub(crate) enum Expression<'a> {
     Identifier(Identifier<'a>),
-    Int(Integer),
+    Integer(Integer<'a>),
     Prefix(PrefixExpression<'a>),
     Infix(InfixExpression<'a>),
+}
+
+impl<'a> From<&Box<Expression<'a>>> for Token<'a> {
+    fn from(value: &Box<Expression<'a>>) -> Token<'a> {
+        match value.as_ref() {
+            Expression::Identifier(identifier) => identifier.token,
+            Expression::Integer(integer) => integer.token,
+            Expression::Prefix(prefix) => prefix.token,
+            Expression::Infix(infix) => infix.token,
+        }
+    }
+}
+
+impl Display for Expression<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            Expression::Identifier(i) => Display::fmt(&i, f),
+            Expression::Integer(i) => Display::fmt(&i, f),
+            Expression::Prefix(p) => Display::fmt(&p, f),
+            Expression::Infix(i) => Display::fmt(&i, f),
+        }
+    }
 }
 
 impl<'a> Expression<'a> {
@@ -24,7 +46,7 @@ impl<'a> Expression<'a> {
         let token = parser.current_token;
         let mut exp = match token {
             Token::Identifier(_) => Expression::Identifier(Identifier::parse(parser)?),
-            Token::Int(_) => Expression::Int(Integer::parse(parser)?),
+            Token::Integer(_) => Expression::Integer(Integer::parse(parser)?),
             token if token.is_prefix() => Expression::Prefix(PrefixExpression::parse(parser, &precedence)?),
             _ => return Err(parser.unexpected_prefix_error(token)),
         };
@@ -41,24 +63,26 @@ impl<'a> Expression<'a> {
     }
 }
 
-impl Display for Expression<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        match self {
-            Expression::Identifier(i) => Display::fmt(&i, f),
-            Expression::Int(i) => Display::fmt(&i, f),
-            Expression::Prefix(p) => Display::fmt(&p, f),
-            Expression::Infix(i) => Display::fmt(&i, f),
-        }
-    }
-}
+#[cfg(test)]
+mod expression_tests {
+    use crate::interpreter::ast::Program;
+    use crate::interpreter::lexer::Lexer;
+    use crate::interpreter::parser::Parser;
 
-impl Node for Expression<'_> {
-    fn token_literal(&self) -> String {
-        match self {
-            Expression::Identifier(i) => i.token_literal(),
-            Expression::Int(i) => i.token_literal(),
-            Expression::Prefix(p) => p.token_literal(),
-            Expression::Infix(i) => i.token_literal(),
+    #[test]
+    fn walk_parse_expression() {
+        let tests = vec![
+            "5 + 5 * 5;",
+        ];
+
+        for test in tests {
+            let lexer = Lexer::new(test);
+            let mut parser = Parser::new(lexer);
+            let program = Program::parse(&mut parser).unwrap();
+            parser.check_errors();
+            assert_eq!(program.statements.len(), 1);
+            // let stmt = &program.statements[0];
+            println!("{}", program);
         }
     }
 }

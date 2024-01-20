@@ -20,33 +20,36 @@ impl<'a> LetStatement<'a> {
     pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<LetStatement<'a>> {
         let token = parser.current_token;
         parser.next_token();
-        let identifier = Identifier::parse(parser)?;
+        let name = Identifier::parse(parser)?;
         parser.assert_peek_is(Token::Assign)?;
         // todo skipping the expressions until we encounter a semi colon
+        let todo = Expression::Identifier(Identifier::new(Token::Identifier(""), ""));
         while !parser.current_is(Token::Semicolon) {
             parser.next_token();
         }
-        Ok(LetStatement::new(token, identifier, Expression::Identifier(Identifier::new(""))))
+
+        // todo: this is a hack to get the parser to work
+        Ok(LetStatement::new(token, name, todo))
     }
 }
 
 impl Display for LetStatement<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{} {} = {};", self.token_literal(), self.name.value, self.value)
+        write!(f, "{} {} = {};", self.token.to_string(), self.name.value, self.value)
     }
 }
 
-impl Node for LetStatement<'_> {
-    fn token_literal(&self) -> String {
-        Token::lookup_literal(&self.token)
-    }
-}
+// impl Node for LetStatement<'_> {
+//     fn token_literal(&self) -> String {
+//         self.token.to_string()
+//     }
+// }
 
 #[cfg(test)]
 mod let_statement_tests {
     use super::*;
     use crate::interpreter::{
-        ast::{Node, Statement},
+        ast::Statement,
         lexer::Lexer
     };
     use crate::interpreter::ast::Program;
@@ -82,11 +85,11 @@ mod let_statement_tests {
             if let_stmt.name.value != name {
                 panic!("let_stmt.name.value not '{}'. got={}", name, let_stmt.name.value);
             }
-            if let_stmt.name.token_literal() != name {
-                panic!("let_stmt.name.token_literal() not '{}'. got={}", name, let_stmt.name.token_literal());
+            if let_stmt.name.value.to_string() != name {
+                panic!("let_stmt.name.token_literal() not '{}'. got={}", name, let_stmt.name.value.to_string());
             }
         } else {
-            panic!("stmt not Statement::Let. got={}", stmt);
+            panic!("stmt not Statement::Let. got={:?}", stmt);
         }
         true
     }

@@ -1,19 +1,26 @@
 use std::fmt::{Result};
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Identifier<'a> {
-    pub value: &'a str,
+    pub(crate) token: Token<'a>,
+    pub(crate) value: &'a str,
+}
+
+impl<'a> From<&Identifier<'a>> for Token<'a> {
+    fn from(identifier: &Identifier<'a>) -> Token<'a> {
+        Token::Identifier(identifier.value)
+    }
 }
 
 impl<'a> Identifier<'a> {
-    pub fn new(value: &str) -> Identifier {
-        Identifier { value }
+    pub fn new(token: Token<'a>, value: &'a str) -> Identifier<'a> {
+        Identifier { token, value }
     }
 
     pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<Identifier<'a>> {
         match parser.current_token {
-            Token::Identifier(ident) => Ok(Identifier::new(ident)),
+            Token::Identifier(identifier) => Ok(Identifier::new(parser.current_token, identifier)),
             _ => Err(parser.unexpected_token_error(Token::Identifier(""), parser.current_token))
         }
     }
@@ -24,13 +31,6 @@ impl Display for Identifier<'_> {
         write!(f, "{}", self.value)
     }
 }
-
-impl Node for Identifier<'_> {
-    fn token_literal(&self) -> String {
-        self.value.to_string()
-    }
-}
-
 
 #[cfg(test)]
 mod identifier_tests {
@@ -47,6 +47,6 @@ mod identifier_tests {
         let identifier = Identifier::parse(&mut parser).unwrap();
         parser.check_errors();
         assert_eq!(identifier.value, "foobar");
-        assert_eq!(identifier.token_literal(), "foobar");
+        assert_eq!(identifier.token.to_string(), "foobar");
     }
 }

@@ -7,12 +7,12 @@ use self::{
 #[derive(Debug)]
 pub(crate) struct ReturnStatement<'a> {
     pub token: Token<'a>,
-    pub return_value: Expression<'a>
+    pub value: Expression<'a>
 }
 
 impl<'a> ReturnStatement<'a> {
-    pub fn new(token: Token<'a>, return_value: Expression<'a>) -> ReturnStatement<'a> {
-        ReturnStatement { token, return_value }
+    pub fn new(token: Token<'a>, value: Expression<'a>) -> ReturnStatement<'a> {
+        ReturnStatement { token, value }
     }
 
     pub(crate) fn parse(parser: &mut Parser<'a>) -> anyhow::Result<ReturnStatement<'a>> {
@@ -22,21 +22,24 @@ impl<'a> ReturnStatement<'a> {
         while !parser.current_is(Token::Semicolon) {
             parser.next_token();
         }
-        Ok(ReturnStatement::new(token, Expression::Identifier(Identifier::new(""))))
+
+        // todo: this is a hack to get the parser to work
+        let temp_expression = Expression::Identifier(Identifier::new(Token::Identifier(""), ""));
+        Ok(ReturnStatement::new(token, temp_expression))
     }
 }
 
 impl Display for ReturnStatement<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {};", self.token_literal(), self.return_value)
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{} {};", self.token.to_string(), self.value)
     }
 }
 
-impl Node for ReturnStatement<'_> {
-    fn token_literal(&self) -> String {
-        Token::lookup_literal(&self.token)
-    }
-}
+// impl Node for ReturnStatement<'_> {
+//     fn token_literal(&self) -> String {
+//         self.token.to_string()
+//     }
+// }
 
 #[cfg(test)]
 mod return_statement_tests {
@@ -64,8 +67,12 @@ mod return_statement_tests {
             let stmt = &program.statements[i];
             match stmt {
                 Statement::Return(return_statement) => {
-                    assert_eq!(return_statement.token_literal(), "return");
-                    assert_eq!(return_statement.return_value.token_literal(), test.to_string());
+                    assert_eq!(return_statement.token.to_string(), "return");
+                    if let Expression::Integer(int) = &return_statement.value {
+                        assert_eq!(int.value.to_string(), test.to_string());
+                    } else {
+                        panic!("expected integer literal");
+                    }
                 },
                 _ => panic!("expected return statement")
             }

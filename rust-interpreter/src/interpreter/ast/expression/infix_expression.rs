@@ -61,21 +61,15 @@ impl Node for InfixOperator {
 
 #[derive(Debug)]
 pub(crate) struct InfixExpression<'a> {
-    token: Token<'a>,
-    left: Box<Expression<'a>>,
-    operator: InfixOperator,
-    right: Box<Expression<'a>>,
+    pub(crate) token: Token<'a>,
+    pub(crate) left: Box<Expression<'a>>,
+    pub(crate) operator: InfixOperator,
+    pub(crate) right: Box<Expression<'a>>,
 }
 
 impl Display for InfixExpression<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f, "({} {} {})", self.left, self.operator, self.right)
-    }
-}
-
-impl Node for InfixExpression<'_> {
-    fn token_literal(&self) -> String {
-        self.token.to_string()
+        write!(f, "({} {} {})", self.left, self.token, self.right)
     }
 }
 
@@ -130,10 +124,10 @@ mod infix_expression_tests {
                             assert_eq!(ie.operator.to_string(), test.2);
                             assert_eq!(ie.right.to_string(), test.3);
                         },
-                        _ => panic!("Expected InfixExpression, got {}", es.expression.token_literal())
+                        _ => panic!("Expected InfixExpression, got {:?}", es.expression)
                     }
                 },
-                _ => panic!("Expected ExpressionStatement, got {}", stmt)
+                _ => panic!("Expected ExpressionStatement, got {:?}", stmt)
             }
         }
         

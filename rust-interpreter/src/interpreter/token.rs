@@ -1,13 +1,11 @@
 use std::fmt::Display;
-use crate::interpreter::parser::Precedence;
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Token<'a> {
     Illegal,
     Eof,
     // Identifiers + literals
     Identifier(&'a str),
-    Int(&'a str),
+    Integer(&'a str),
     // Operators
     Assign,
     Plus,
@@ -42,7 +40,7 @@ impl Display for Token<'_> {
             Token::Illegal => write!(f, "illegal"),
             Token::Eof => write!(f, "eof"),
             Token::Identifier(ident) => write!(f, "{}", ident),
-            Token::Int(int) => write!(f, "{}", int),
+            Token::Integer(int) => write!(f, "{}", int),
             Token::Assign => write!(f, "="),
             Token::Plus => write!(f, "+"),
             Token::Minus => write!(f, "-"),
@@ -70,9 +68,9 @@ impl Display for Token<'_> {
     }
 }
 
-impl<'a> Token<'a> {
-    pub fn lookup_token(ident: &str) -> Token {
-        match ident {
+impl<'a> From<&'a str> for Token<'a> {
+    fn from(value: &'a str) -> Token<'a> {
+        match value {
             "fn" => Token::Function,
             "let" => Token::Let,
             "true" => Token::True,
@@ -80,42 +78,12 @@ impl<'a> Token<'a> {
             "if" => Token::If,
             "else" => Token::Else,
             "return" => Token::Return,
-            _ => Token::Identifier(ident),
+            _ => Token::Identifier(value),
         }
     }
-    
-    pub fn lookup_literal(token: &Token) -> String {
-        match token {
-            Token::Illegal => "illegal",
-            Token::Eof => "eof",
-            Token::Identifier(_) => "identifier",
-            Token::Int(_) => "int",
-            Token::Assign => "=",
-            Token::Plus => "+",
-            Token::Minus => "-",
-            Token::Bang => "!",
-            Token::Asterisk => "*",
-            Token::Slash => "/",
-            Token::LessThan => "<",
-            Token::GreaterThan => ">",
-            Token::Equal => "==",
-            Token::NotEqual => "!=",
-            Token::Comma => ",",
-            Token::Semicolon => ";",
-            Token::LParen => "(",
-            Token::RParen => ")",
-            Token::LCurly => "{",
-            Token::RCurly => "}",
-            Token::Function => "fn",
-            Token::Let => "let",
-            Token::True => "true",
-            Token::False => "false",
-            Token::If => "if",
-            Token::Else => "else",
-            Token::Return => "return",
-        }.to_string()
-    }
-    
+}
+
+impl<'a> Token<'a> {
     pub fn is_prefix(&self) -> bool {
         match self {
             Token::Bang => true,
@@ -123,7 +91,7 @@ impl<'a> Token<'a> {
             _ => false,
         }
     }
-    
+
     pub fn is_infix(&self) -> bool {
         match self {
             Token::Plus => true,

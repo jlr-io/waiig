@@ -73,11 +73,11 @@ impl<'a> Lexer<'a> {
                 '}' => Token::RCurly,
                 ch if ch.is_alphabetic() => {
                     let literal = self.read_identifier();
-                    return Token::lookup_token(&literal);
+                    return Token::from(literal);
                 }
                 ch if ch.is_numeric() => {
                     let literal = self.read_number();
-                    return Token::Int(&literal);
+                    return Token::Integer(&literal);
                 }
                 _ => Token::Illegal,
             },
@@ -165,12 +165,12 @@ mod lexer_tests {
             Token::Let,
             Token::Identifier("five".into()),
             Token::Assign,
-            Token::Int("5".into()),
+            Token::Integer("5".into()),
             Token::Semicolon,
             Token::Let,
             Token::Identifier("ten".into()),
             Token::Assign,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::Semicolon,
             Token::Let,
             Token::Identifier("add".into()),
@@ -202,19 +202,19 @@ mod lexer_tests {
             Token::Minus,
             Token::Slash,
             Token::Asterisk,
-            Token::Int("5".into()),
+            Token::Integer("5".into()),
             Token::Semicolon,
-            Token::Int("5".into()),
+            Token::Integer("5".into()),
             Token::LessThan,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::GreaterThan,
-            Token::Int("5".into()),
+            Token::Integer("5".into()),
             Token::Semicolon,
             Token::If,
             Token::LParen,
-            Token::Int("5".into()),
+            Token::Integer("5".into()),
             Token::LessThan,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::RParen,
             Token::LCurly,
             Token::Return,
@@ -227,13 +227,13 @@ mod lexer_tests {
             Token::False,
             Token::Semicolon,
             Token::RCurly,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::Equal,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::Semicolon,
-            Token::Int("10".into()),
+            Token::Integer("10".into()),
             Token::NotEqual,
-            Token::Int("9".into()),
+            Token::Integer("9".into()),
             Token::Semicolon,
             Token::Eof,
         ];
